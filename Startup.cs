@@ -18,11 +18,22 @@ namespace photosAPI
             Configuration = configuration;
         }
 
+        readonly string MyAllowSpecificOrigins = "_myAllowSpecificOrigins";
+
         public IConfiguration Configuration { get; }
 
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
+            services.AddCors(options =>
+            {
+                options.AddPolicy(MyAllowSpecificOrigins,
+                builder =>
+                {
+                    builder.WithOrigins("http://localhost:4200");
+                });
+            });
+                    
             // requires using Microsoft.Extensions.Options
             services.Configure<PhotosDatabaseSettings>(
                 Configuration.GetSection(nameof(PhotosDatabaseSettings)));
@@ -49,6 +60,8 @@ namespace photosAPI
             {
                 app.UseDeveloperExceptionPage();
             }
+            app.UseCors(builder => builder.AllowAnyHeader().AllowAnyMethod().AllowAnyOrigin());
+            // app.UseCors(MyAllowSpecificOrigins);
 
             app.UseHttpsRedirection();
 
